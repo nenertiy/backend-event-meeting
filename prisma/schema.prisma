@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,10 +12,175 @@ model User {
   username  String   @unique
   email     String   @unique
   password  String
+  role      UserRole @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  avatar    Media?   @relation(fields: [avatarId], references: [id], onDelete: Cascade)
-  avatarId  String?
+
+  avatar            Media?              @relation(fields: [avatarId], references: [id], onDelete: Cascade)
+  avatarId          String?
+  participant       Participant?
+  friendships       Friendship[]        @relation("SentFriendRequests")
+  receivedRequests  Friendship[]        @relation("ReceivedFriendRequests")
+  organizer         Organizer?
+  favoriteTags      FavoriteTag[]
+  favoriteOrganizer FavoriteOrganizer[]
+}
+
+enum UserRole {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+model Event {
+  id                String      @id @default(uuid())
+  title             String
+  description       String
+  format            EventFormat
+  status            EventStatus @default(SCHEDULED)
+  startDate         DateTime
+  endDate           DateTime
+  duration          Int?
+  address           String
+  latitude          Float
+  longitude         Float
+  capacity          Int?
+  participantsCount Int         @default(0)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @default(now()) @updatedAt
+
+  coverImageId     String?
+  coverImage       Media?             @relation(fields: [coverImageId], references: [id], onDelete: Cascade)
+  organizerId      String
+  organizer        Organizer          @relation(fields: [organizerId], references: [id])
+  eventParticipant EventParticipant[]
+  eventTag         EventTag[]
+  eventImage       EventImage[]
+}
+
+enum EventFormat {
+  OFFLINE
+  ONLINE
+}
+
+enum EventStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model EventImage {
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  imageId String
+  image   Media  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, imageId])
+}
+
+model Organizer {
+  id               String   @id @default(uuid())
+  sphereOfActivity String
+  description      String
+  phone            String
+  isAccredited     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+
+  userId          String              @unique
+  user            User                @relation(fields: [userId], references: [id])
+  events          Event[]
+  favoriteByUsers FavoriteOrganizer[]
+}
+
+model FavoriteOrganizer {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, organizerId])
+}
+
+model Participant {
+  id         String     @id @default(uuid())
+  visibility Visibility
+
+  userId String             @unique()
+  user   User               @relation(fields: [userId], references: [id])
+  events EventParticipant[]
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS_ONLY
+}
+
+model EventParticipant {
+  id     String              @id @default(uuid())
+  status ParticipationStatus
+
+  eventId       String
+  event         Event       @relation(fields: [eventId], references: [id])
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id])
+
+  @@unique([eventId, participantId])
+}
+
+enum ParticipationStatus {
+  VISITED
+  GOING
+}
+
+model EventTag {
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tagId   String
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, tagId])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  eventTag    EventTag[]
+  favoriteTag FavoriteTag[]
+}
+
+model FavoriteTag {
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([tagId, userId])
+}
+
+model Friendship {
+  id        String       @id @default(uuid())
+  status    FriendStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+
+  userId   String
+  user     User   @relation("SentFriendRequests", fields: [userId], references: [id])
+  friendId String
+  friend   User   @relation("ReceivedFriendRequests", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+enum FriendStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model Media {
@@ -31,10 +190,14 @@ model Media {
   type      MediaType
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
-  users     User[]
+
+  users      User[]
+  event      Event[]
+  eventImage EventImage[]
 }
 
 enum MediaType {
   AVATAR
-  POST
+  COVER_IMAGE
+  EVENT_IMAGE
 }
