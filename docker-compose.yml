@@ -23,7 +23,7 @@ services:
       minio:
         condition: service_healthy
     command: >
-      sh -c "npx prisma db push && npm run start:prod"
+      sh -c "npx prisma db push --accept-data-loss && npm run start:prod"
 
   postgres:
     container_name: postgres-event-app
