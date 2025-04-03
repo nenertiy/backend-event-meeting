@@ -8,7 +8,8 @@ import config from 'src/config/config';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { TokenModule } from '../token/token.module';
-
+import { TagsModule } from '../tags/tags.module';
+import { MediaModule } from '../media/media.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -46,6 +47,8 @@ import { TokenModule } from '../token/token.module';
     UsersModule,
     AuthModule,
     TokenModule,
+    TagsModule,
+    MediaModule,
   ],
 })
 export class AppModule {}
