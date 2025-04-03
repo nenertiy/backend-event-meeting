@@ -3,6 +3,7 @@ import { PrismaService } from '../app/prisma.service';
 import { USER_SELECT } from 'src/common/types/include/user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class UsersRepository {
@@ -32,9 +33,34 @@ export class UsersRepository {
     });
   }
 
-  async create(data: CreateUserDto) {
+  async createUser(data: CreateUserDto) {
     return this.prisma.user.create({
-      data,
+      data: {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      },
+      select: USER_SELECT,
+    });
+  }
+
+  async createOrganizer(data: CreateUserDto) {
+    return this.prisma.user.create({
+      data: {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        role: UserRole.ORGANIZER,
+        organizer: {
+          create: {
+            description: data.description,
+            sphereOfActivity: data.sphereOfActivity,
+            phone: data.phone,
+            isAccredited: false,
+          },
+        },
+      },
       select: USER_SELECT,
     });
   }
