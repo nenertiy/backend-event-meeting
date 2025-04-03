@@ -58,6 +58,7 @@ export class UsersRepository {
             sphereOfActivity: data.sphereOfActivity,
             phone: data.phone,
             isAccredited: false,
+            infoResource: data.infoResource,
           },
         },
       },
