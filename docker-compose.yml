@@ -1,9 +1,9 @@
 services:
   app:
     build: .
-    container_name: backend-template
+    container_name: backend-event-app
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/template
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/event
       ACCESS_TOKEN: ACCESS_TOKEN
       REFRESH_TOKEN: REFRESH_TOKEN
       REDIS_URL: http://redis:6379
@@ -26,13 +26,13 @@ services:
       sh -c "npx prisma db push && npm run start:prod"
 
   postgres:
-    container_name: postgres-template
+    container_name: postgres-event-app
     image: postgres:17-alpine3.21
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: template
+      POSTGRES_DB: event
     ports:
       - '5434:5432'
     volumes:
@@ -46,7 +46,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis-template
+    container_name: redis-event-app
     restart: always
     ports:
       - '6379:6379'

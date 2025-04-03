@@ -28,8 +28,9 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MediaService } from '../media/media.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MediaType } from '@prisma/client';
-
+import { MediaType, UserRole } from '@prisma/client';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -57,6 +58,14 @@ export class UsersController {
     return this.usersService.update(user.id, dto);
   }
 
+  @ApiOperation({ summary: 'Delete user' })
+  @ApiBearerAuth()
+  @Delete('profile')
+  @UseGuards(JwtAuthGuard)
+  async deleteUser(@DecodeUser() user: UserWithoutPassword) {
+    return this.usersService.delete(user.id);
+  }
+
   @ApiOperation({ summary: 'Get all users' })
   @ApiQuery({ name: 'query', required: false })
   @ApiQuery({ name: 'take', required: false })
@@ -74,6 +83,24 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
+  }
+
+  @ApiOperation({ summary: 'Update user by id (Admin only)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch(':id')
+  async updateUserById(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete user by id (Admin only)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete(':id')
+  async deleteUserById(@Param('id') id: string) {
+    return this.usersService.delete(id);
   }
 
   @ApiOperation({ summary: 'Upload avatar' })

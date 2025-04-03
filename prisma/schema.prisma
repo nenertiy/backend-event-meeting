@@ -81,9 +81,9 @@ model EventImage {
 
 model Organizer {
   id               String   @id @default(uuid())
-  sphereOfActivity String
-  description      String
-  phone            String
+  sphereOfActivity String?
+  description      String?
+  phone            String?
   isAccredited     Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt

@@ -10,7 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordService } from '../password/password.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-
+import { UserRole } from '@prisma/client';
 @Injectable()
 export class UsersService {
   constructor(
@@ -81,15 +81,22 @@ export class UsersService {
     const hashedPassword = await this.passwordService.hashPassword(
       dto.password,
     );
-    const user = await this.usersRepository.create({
-      ...dto,
-      password: hashedPassword,
-    });
 
-    await this.cacheManager.del('users');
-    await this.cacheManager.set(`user_${user.id}`, user);
-
-    return user;
+    if (dto.role === UserRole.ORGANIZER) {
+      const organizer = await this.usersRepository.createOrganizer({
+        ...dto,
+        password: hashedPassword,
+      });
+      await this.cacheManager.set(`user_${organizer.id}`, organizer);
+      return organizer;
+    } else {
+      const user = await this.usersRepository.createUser({
+        ...dto,
+        password: hashedPassword,
+      });
+      await this.cacheManager.set(`user_${user.id}`, user);
+      return user;
+    }
   }
 
   async update(id: string, dto: UpdateUserDto) {
@@ -98,20 +105,15 @@ export class UsersService {
     await this.cacheManager.del('users');
     await this.cacheManager.del(`user_${id}`);
 
+    let updateData = { ...dto };
+
     if (dto.password) {
-      const hashedPassword = await this.passwordService.hashPassword(
+      updateData.password = await this.passwordService.hashPassword(
         dto.password,
       );
-      await this.usersRepository.update(id, {
-        ...dto,
-        password: hashedPassword,
-      });
     }
 
-    const user = await this.usersRepository.update(id, {
-      ...dto,
-    });
-
+    const user = await this.usersRepository.update(id, updateData);
     await this.cacheManager.set(`user_${user.id}`, user);
 
     return user;
