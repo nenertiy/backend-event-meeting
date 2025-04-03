@@ -49,6 +49,9 @@ export class AuthController {
         phone: {
           type: 'string',
         },
+        infoResource: {
+          type: 'string',
+        },
       },
     },
   })

@@ -10,6 +10,7 @@ import { AuthModule } from '../auth/auth.module';
 import { TokenModule } from '../token/token.module';
 import { TagsModule } from '../tags/tags.module';
 import { MediaModule } from '../media/media.module';
+import { EventsModule } from '../events/events.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -48,6 +49,7 @@ import { MediaModule } from '../media/media.module';
     AuthModule,
     TokenModule,
     TagsModule,
+    EventsModule,
     MediaModule,
   ],
 })

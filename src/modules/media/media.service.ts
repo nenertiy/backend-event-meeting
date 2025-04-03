@@ -99,4 +99,62 @@ export class MediaService implements OnModuleInit {
     await this.delete(user.avatar.id);
     await this.deleteObject(user.avatar.url);
   }
+
+  async uploadEventCoverImage(eventId: string, file: Express.Multer.File) {
+    const upload = await this.uploadFile(file, MediaType.COVER_IMAGE);
+    await this.mediaRepository.uploadEventCoverImage(eventId, upload.id);
+    return upload;
+  }
+
+  async deleteEventCoverImage(eventId: string) {
+    const event = await this.mediaRepository.findEventCoverImage(eventId);
+    if (!event.coverImage) {
+      throw new NotFoundException('Event does not have a cover image');
+    }
+    await this.delete(event.coverImage.id);
+    await this.deleteObject(event.coverImage.url);
+  }
+
+  async uploadEventImages(eventId: string, files: Express.Multer.File[]) {
+    const uploads = await Promise.all(
+      files.map((file) => this.uploadFile(file, MediaType.EVENT_IMAGE)),
+    );
+    await this.mediaRepository.uploadEventImages(
+      eventId,
+      uploads.map((upload) => upload.id),
+    );
+    return uploads;
+  }
+
+  async deleteEventImages(eventId: string) {
+    const images = await this.mediaRepository.findEventImages(eventId);
+    if (images.length === 0) {
+      throw new NotFoundException('Event does not have any images');
+    }
+
+    await Promise.all(images.map((img) => this.delete(img.image.id)));
+    await Promise.all(images.map((img) => this.deleteObject(img.image.url)));
+  }
+
+  async replaceEventImages(eventId: string, files: Express.Multer.File[]) {
+    const existingImages = await this.mediaRepository.findEventImages(eventId);
+
+    if (existingImages.length) {
+      await Promise.all(existingImages.map((img) => this.delete(img.image.id)));
+      await Promise.all(
+        existingImages.map((img) => this.deleteObject(img.image.url)),
+      );
+    }
+
+    const uploads = await Promise.all(
+      files.map((file) => this.uploadFile(file, MediaType.EVENT_IMAGE)),
+    );
+
+    await this.mediaRepository.uploadEventImages(
+      eventId,
+      uploads.map((upload) => upload.id),
+    );
+
+    return uploads;
+  }
 }
