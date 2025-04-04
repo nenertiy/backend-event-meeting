@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EventsRepository } from './events.repository';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { MediaService } from '../media/media.service';
-
+import { UsersService } from '../users/users.service';
+import { ParticipantsService } from '../participants/participants.service';
 @Injectable()
 export class EventsService {
   constructor(
     private readonly eventsRepository: EventsRepository,
     private readonly mediaService: MediaService,
+    private readonly participantsService: ParticipantsService,
   ) {}
 
   async create(
@@ -94,5 +100,85 @@ export class EventsService {
       throw new NotFoundException('No events found');
     }
     return events;
+  }
+
+  async findByTagId(tagId: string) {
+    const events = await this.eventsRepository.findByTagId(tagId);
+    if (events.length === 0) {
+      throw new NotFoundException('No events found');
+    }
+    return events;
+  }
+
+  async joinEvent(eventId: string, userId: string) {
+    const event = await this.eventsRepository.findById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    let participant = await this.participantsService.findByUserId(userId);
+    if (!participant) {
+      participant = await this.participantsService.create(userId);
+    }
+
+    const eventParticipant =
+      await this.participantsService.findByEventIdAndParticipantId(
+        eventId,
+        participant.id,
+      );
+    if (eventParticipant) {
+      throw new ConflictException(
+        'You are already a participant of this event',
+      );
+    }
+
+    await this.eventsRepository.joinEvent(eventId, participant.id);
+
+    await this.eventsRepository.update(eventId, {
+      participantsCount: event.participantsCount + 1,
+    });
+
+    return {
+      message: 'You have joined the event',
+    };
+  }
+
+  async leaveEvent(eventId: string, userId: string) {
+    const event = await this.eventsRepository.findById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    const participant = await this.participantsService.findByUserId(userId);
+    if (!participant) {
+      throw new NotFoundException('Participant not found');
+    }
+
+    const eventParticipant =
+      await this.participantsService.findByEventIdAndParticipantId(
+        eventId,
+        participant.id,
+      );
+    if (!eventParticipant) {
+      throw new NotFoundException('You are not a participant of this event');
+    }
+
+    await this.eventsRepository.leaveEvent(eventId, participant.id);
+
+    await this.eventsRepository.update(eventId, {
+      participantsCount: event.participantsCount - 1,
+    });
+
+    return {
+      message: 'You have left the event',
+    };
+  }
+
+  async getParticipants(eventId: string) {
+    const participants = await this.eventsRepository.getParticipants(eventId);
+    if (participants.length === 0) {
+      throw new NotFoundException('No participants found');
+    }
+    return participants;
   }
 }

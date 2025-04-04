@@ -34,8 +34,55 @@ export const EVENT_SELECT = {
       },
     },
   },
-  organizer: true,
-  eventParticipant: true,
+  organizer: {
+    select: {
+      id: true,
+      description: true,
+      sphereOfActivity: true,
+      infoResource: true,
+      isAccredited: true,
+      phone: true,
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: {
+            select: {
+              id: true,
+              url: true,
+              filename: true,
+              type: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  eventParticipant: {
+    select: {
+      id: true,
+      status: true,
+      participant: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              avatar: {
+                select: {
+                  url: true,
+                  filename: true,
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   eventTag: {
     select: {
       tag: {
