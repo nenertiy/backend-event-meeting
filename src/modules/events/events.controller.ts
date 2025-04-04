@@ -228,4 +228,39 @@ export class EventsController {
   async findByOrganizerId(@Param('id') id: string) {
     return this.eventsService.findByOrganizerId(id);
   }
+
+  @ApiOperation({ summary: 'Get all events by tag id' })
+  @Get('tag/:id')
+  async findByTagId(@Param('id') id: string) {
+    return this.eventsService.findByTagId(id);
+  }
+
+  @ApiOperation({ summary: 'Join event' })
+  @ApiBearerAuth()
+  @Post(':id/join')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.USER)
+  async joinEvent(
+    @Param('id') id: string,
+    @DecodeUser() user: UserWithoutPassword,
+  ) {
+    return this.eventsService.joinEvent(id, user.id);
+  }
+
+  @ApiOperation({ summary: 'Leave event' })
+  @ApiBearerAuth()
+  @Post(':id/leave')
+  @UseGuards(JwtAuthGuard)
+  async leaveEvent(
+    @Param('id') id: string,
+    @DecodeUser() user: UserWithoutPassword,
+  ) {
+    return this.eventsService.leaveEvent(id, user.id);
+  }
+
+  @ApiOperation({ summary: 'Get participants of event' })
+  @Get(':id/participants')
+  async getParticipants(@Param('id') id: string) {
+    return this.eventsService.getParticipants(id);
+  }
 }
