@@ -8,6 +8,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsArray,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateEventDto {
@@ -80,4 +82,17 @@ export class CreateEventDto {
   @IsNumber()
   @IsNotEmpty()
   participantsCount: number;
+
+  @ApiProperty({
+    description: 'Array of tag IDs',
+    type: [String],
+    example: ['550e8400-e29b-41d4-a716-446655440000'],
+  })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  tagIds: string[];
 }

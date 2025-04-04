@@ -15,7 +15,6 @@ import {
 import { EventsService } from './events.service';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { CreateEventDto } from './dto/create-event.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserWithoutPassword } from 'src/common/types/user';
 import { DecodeUser } from 'src/common/decorators/decode-user.decorator';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
@@ -87,6 +86,10 @@ export class EventsController {
             type: 'string',
             format: 'binary',
           },
+        },
+        tagIds: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
         },
       },
     },
