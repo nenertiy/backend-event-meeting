@@ -36,7 +36,16 @@ export const EVENT_SELECT = {
   },
   organizer: true,
   eventParticipant: true,
-  eventTag: true,
+  eventTag: {
+    select: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
   createdAt: true,
   updatedAt: true,
 } as Prisma.EventSelect;

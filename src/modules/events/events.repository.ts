@@ -9,13 +9,23 @@ export class EventsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(organizerId: string, data: CreateEventDto) {
+    const existingTags = await this.prisma.tag.findMany({
+      where: { id: { in: data.tagIds } },
+      select: { id: true },
+    });
+
+    const validTagIds = existingTags.map((tag) => tag.id);
+
+    const { tagIds, ...eventData } = data;
+
     return this.prisma.event.create({
       data: {
-        ...data,
+        ...eventData,
+        eventTag: data.tagIds?.length
+          ? { create: validTagIds.map((tagId) => ({ tagId })) }
+          : undefined,
         organizer: {
-          connect: {
-            id: organizerId,
-          },
+          connect: { id: organizerId },
         },
       },
     });
@@ -33,7 +43,12 @@ export class EventsRepository {
 
     return this.prisma.event.update({
       where: { id },
-      data: updatedData,
+      data: {
+        ...updatedData,
+        eventTag: {
+          create: data.tagIds.map((tagId) => ({ tagId })),
+        },
+      },
     });
   }
 
