@@ -101,6 +101,8 @@ export class UsersService {
 
   async update(id: string, dto: UpdateUserDto) {
     await this.checkUserExistsById(id);
+    await this.checkUserExistsByEmail(dto.email);
+    await this.checkUserExistsByUsername(dto.username);
 
     await this.cacheManager.del('users');
     await this.cacheManager.del(`user_${id}`);
@@ -131,14 +133,14 @@ export class UsersService {
   private async checkUserExistsByEmail(email: string) {
     const user = await this.usersRepository.findByEmail(email);
     if (user) {
-      throw new ConflictException('User already exists');
+      throw new ConflictException('User with this email already exists');
     }
   }
 
   private async checkUserExistsByUsername(username: string) {
     const user = await this.usersRepository.findByUsername(username);
     if (user) {
-      throw new ConflictException('User already exists');
+      throw new ConflictException('User with this username already exists');
     }
   }
 
