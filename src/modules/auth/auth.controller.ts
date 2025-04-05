@@ -20,7 +20,6 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Sign up' })
   @ApiConsumes('multipart/form-data')
-  @ApiBearerAuth()
   @ApiBody({
     schema: {
       type: 'object',

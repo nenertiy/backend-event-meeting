@@ -235,6 +235,15 @@ export class EventsController {
     return this.eventsService.findByTagId(id);
   }
 
+  @ApiOperation({ summary: 'Cancel event' })
+  @ApiBearerAuth()
+  @Delete(':id/cancel')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+  async cancelEvent(@Param('id') id: string) {
+    return this.eventsService.cancelEvent(id);
+  }
+
   @ApiOperation({ summary: 'Join event' })
   @ApiBearerAuth()
   @Post(':id/join')

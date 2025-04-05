@@ -9,6 +9,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { MediaService } from '../media/media.service';
 import { UsersService } from '../users/users.service';
 import { ParticipantsService } from '../participants/participants.service';
+import { EventStatus } from '@prisma/client';
 @Injectable()
 export class EventsService {
   constructor(
@@ -83,7 +84,8 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    return events;
+
+    return this.syncStatuses(events);
   }
 
   async findById(id: string) {
@@ -91,6 +93,19 @@ export class EventsService {
     if (!event) {
       throw new NotFoundException('Event not found');
     }
+
+    const actualStatus = await this.eventsRepository.determineEventStatus(
+      event.startDate,
+      event.endDate,
+    );
+
+    if (event.status !== actualStatus) {
+      await this.eventsRepository.update(id, {
+        status: actualStatus,
+      });
+      event.status = actualStatus;
+    }
+
     return event;
   }
 
@@ -99,7 +114,8 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    return events;
+
+    return this.syncStatuses(events);
   }
 
   async findByTagId(tagId: string) {
@@ -107,7 +123,16 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    return events;
+
+    return this.syncStatuses(events);
+  }
+
+  async cancelEvent(id: string) {
+    const event = await this.eventsRepository.findById(id);
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+    return this.eventsRepository.cancelEvent(id);
   }
 
   async joinEvent(eventId: string, userId: string) {
@@ -180,5 +205,19 @@ export class EventsService {
       throw new NotFoundException('No participants found');
     }
     return participants;
+  }
+
+  private async syncStatuses(events: any[]): Promise<any[]> {
+    for (const event of events) {
+      const actualStatus = await this.eventsRepository.determineEventStatus(
+        event.startDate,
+        event.endDate,
+      );
+      if (event.status !== actualStatus) {
+        await this.eventsRepository.update(event.id, { status: actualStatus });
+        event.status = actualStatus;
+      }
+    }
+    return events;
   }
 }

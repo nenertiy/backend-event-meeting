@@ -3,7 +3,7 @@ import { PrismaService } from '../app/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { EVENT_SELECT } from 'src/common/types/include/event';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { ParticipationStatus } from '@prisma/client';
+import { EventStatus, ParticipationStatus } from '@prisma/client';
 
 @Injectable()
 export class EventsRepository {
@@ -16,13 +16,18 @@ export class EventsRepository {
     });
 
     const validTagIds = existingTags.map((tag) => tag.id);
-
     const { tagIds, ...eventData } = data;
+
+    const status = await this.determineEventStatus(
+      new Date(eventData.startDate),
+      new Date(eventData.endDate),
+    );
 
     return this.prisma.event.create({
       data: {
         ...eventData,
-        eventTag: data.tagIds?.length
+        status,
+        eventTag: tagIds?.length
           ? { create: validTagIds.map((tagId) => ({ tagId })) }
           : undefined,
         organizer: {
@@ -72,14 +77,15 @@ export class EventsRepository {
     return this.prisma.event.findMany({
       take,
       skip,
-      where: query
-        ? {
-            OR: [
-              { title: { contains: query, mode: 'insensitive' } },
-              { description: { contains: query, mode: 'insensitive' } },
-            ],
-          }
-        : {},
+      where: {
+        status: { not: EventStatus.CANCELLED },
+        ...(query && {
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { description: { contains: query, mode: 'insensitive' } },
+          ],
+        }),
+      },
       select: EVENT_SELECT,
     });
   }
@@ -102,6 +108,13 @@ export class EventsRepository {
     return this.prisma.event.findMany({
       where: { eventTag: { some: { tagId } } },
       select: EVENT_SELECT,
+    });
+  }
+
+  async cancelEvent(id: string) {
+    return this.prisma.event.update({
+      where: { id },
+      data: { status: EventStatus.CANCELLED },
     });
   }
 
@@ -141,5 +154,19 @@ export class EventsRepository {
         },
       },
     });
+  }
+
+  async determineEventStatus(
+    startDate: Date,
+    endDate: Date,
+    currentStatus?: EventStatus,
+  ): Promise<EventStatus> {
+    if (currentStatus === EventStatus.CANCELLED) return EventStatus.CANCELLED;
+
+    const now = new Date();
+
+    if (now < startDate) return EventStatus.SCHEDULED;
+    if (now >= startDate && now <= endDate) return EventStatus.ONGOING;
+    return EventStatus.COMPLETED;
   }
 }

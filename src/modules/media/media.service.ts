@@ -69,13 +69,17 @@ export class MediaService implements OnModuleInit {
   }
 
   async delete(id: string) {
+    const media = await this.mediaRepository.findOne(id);
+    if (!media) {
+      throw new NotFoundException('Media not found');
+    }
     await this.mediaRepository.delete(id);
   }
 
   async findOneById(id: string) {
     const media = await this.mediaRepository.findOne(id);
     if (!media) {
-      throw new NotFoundException();
+      throw new NotFoundException('Media not found');
     }
     return media;
   }
@@ -83,7 +87,7 @@ export class MediaService implements OnModuleInit {
   async uploadAvatar(userId: string, file: Express.Multer.File) {
     const user = await this.mediaRepository.findUserAvatar(userId);
     if (user.avatar) {
-      await this.delete(user.avatar.id);
+      await this.delete(user.avatarId);
       await this.deleteObject(user.avatar.url);
     }
     const upload = await this.uploadFile(file, MediaType.AVATAR);
@@ -96,7 +100,7 @@ export class MediaService implements OnModuleInit {
     if (!user.avatar) {
       throw new NotFoundException('User does not have an avatar');
     }
-    await this.delete(user.avatar.id);
+    await this.delete(user.avatarId);
     await this.deleteObject(user.avatar.url);
   }
 
@@ -111,7 +115,7 @@ export class MediaService implements OnModuleInit {
     if (!event.coverImage) {
       throw new NotFoundException('Event does not have a cover image');
     }
-    await this.delete(event.coverImage.id);
+    await this.delete(event.coverImageId);
     await this.deleteObject(event.coverImage.url);
   }
 
