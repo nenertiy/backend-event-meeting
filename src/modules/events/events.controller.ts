@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  UploadedFile,
   UseInterceptors,
   Body,
   UploadedFiles,
@@ -233,6 +232,15 @@ export class EventsController {
   @Get('tag/:id')
   async findByTagId(@Param('id') id: string) {
     return this.eventsService.findByTagId(id);
+  }
+
+  @ApiOperation({ summary: 'Cancel event' })
+  @ApiBearerAuth()
+  @Delete(':id/cancel')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+  async cancelEvent(@Param('id') id: string) {
+    return this.eventsService.cancelEvent(id);
   }
 
   @ApiOperation({ summary: 'Join event' })

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { EventFormat, EventStatus } from '@prisma/client';
+import { EventFormat } from '@prisma/client';
 import {
   IsDateString,
   IsEnum,
@@ -27,11 +27,6 @@ export class CreateEventDto {
   @IsEnum(EventFormat)
   @IsNotEmpty()
   format: EventFormat;
-
-  @ApiProperty({ description: 'Event status' })
-  @IsEnum(EventStatus)
-  @IsNotEmpty()
-  status: EventStatus;
 
   @ApiProperty({ type: Date })
   @IsDateString()
