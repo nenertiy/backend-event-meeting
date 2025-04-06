@@ -66,43 +66,6 @@ export class UsersController {
     return this.usersService.delete(user.id);
   }
 
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiQuery({ name: 'query', required: false })
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
-  @Get()
-  async findAll(
-    @Query('query') query: string,
-    @Query('take') take: number,
-    @Query('skip') skip: number,
-  ) {
-    return this.usersService.findAll(query, take, skip);
-  }
-
-  @ApiOperation({ summary: 'Get user by id' })
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findById(id);
-  }
-
-  @ApiOperation({ summary: 'Update user by id (Admin only)' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Patch(':id')
-  async updateUserById(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
-  }
-
-  @ApiOperation({ summary: 'Delete user by id (Admin only)' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Delete(':id')
-  async deleteUserById(@Param('id') id: string) {
-    return this.usersService.delete(id);
-  }
-
   @ApiOperation({ summary: 'Upload avatar' })
   @ApiConsumes('multipart/form-data')
   @ApiBearerAuth()
@@ -147,9 +110,47 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete avatar' })
   @ApiBearerAuth()
   @Delete('avatar')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZER, UserRole.USER)
   async deleteAvatar(@DecodeUser() user: UserWithoutPassword) {
     await this.mediaService.deleteAvatar(user.id);
     return { message: 'Avatar deleted' };
+  }
+
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiQuery({ name: 'query', required: false })
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @Get()
+  async findAll(
+    @Query('query') query: string,
+    @Query('take') take: number,
+    @Query('skip') skip: number,
+  ) {
+    return this.usersService.findAll(query, take, skip);
+  }
+
+  @ApiOperation({ summary: 'Get user by id' })
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.usersService.findById(id);
+  }
+
+  @ApiOperation({ summary: 'Update user by id (Admin only)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch(':id')
+  async updateUserById(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete user by id (Admin only)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete(':id')
+  async deleteUserById(@Param('id') id: string) {
+    return this.usersService.delete(id);
   }
 }

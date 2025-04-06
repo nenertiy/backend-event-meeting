@@ -7,7 +7,6 @@ import { EventsRepository } from './events.repository';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { MediaService } from '../media/media.service';
-import { UsersService } from '../users/users.service';
 import { ParticipantsService } from '../participants/participants.service';
 import { EventStatus } from '@prisma/client';
 @Injectable()
@@ -72,11 +71,17 @@ export class EventsService {
     if (!event) throw new NotFoundException('Event not found');
 
     if (event.coverImageId) {
-      await this.mediaService.deleteEventCoverImage(event.coverImageId);
+      await this.mediaService.deleteEventCoverImage(id);
     }
-    await this.mediaService.deleteEventImages(id);
 
-    return this.eventsRepository.delete(id);
+    if (event.eventImage.length > 0) {
+      await this.mediaService.deleteEventImages(id);
+    }
+
+    await this.eventsRepository.delete(id);
+    return {
+      message: 'Event deleted successfully',
+    };
   }
 
   async findAll(query?: string, take?: number, skip?: number) {
@@ -99,7 +104,10 @@ export class EventsService {
       event.endDate,
     );
 
-    if (event.status !== actualStatus) {
+    if (
+      event.status !== EventStatus.CANCELLED &&
+      event.status !== actualStatus
+    ) {
       await this.eventsRepository.update(id, {
         status: actualStatus,
       });
