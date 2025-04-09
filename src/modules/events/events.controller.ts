@@ -24,6 +24,7 @@ import { UserRole, EventFormat, EventStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CanEventGuard } from '../auth/guards/event.guard';
+import { SearchEventDto } from './dto/search-event.dto';
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -220,6 +221,12 @@ export class EventsController {
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   async delete(@Param('id') id: string) {
     return this.eventsService.delete(id);
+  }
+
+  @ApiOperation({ summary: 'Search events' })
+  @Post('search')
+  async search(@Body() dto: SearchEventDto) {
+    return this.eventsService.search(dto);
   }
 
   @ApiOperation({ summary: 'Get all events by organizer id' })
