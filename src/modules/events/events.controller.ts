@@ -23,7 +23,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole, EventFormat, EventStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
-
+import { CanEventGuard } from '../auth/guards/event.guard';
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -197,7 +197,7 @@ export class EventsController {
     },
   })
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, CanEventGuard)
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   @UseInterceptors(AnyFilesInterceptor())
   async update(
@@ -216,7 +216,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Delete event' })
   @ApiBearerAuth()
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, CanEventGuard)
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   async delete(@Param('id') id: string) {
     return this.eventsService.delete(id);
@@ -237,7 +237,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Cancel event' })
   @ApiBearerAuth()
   @Delete(':id/cancel')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, CanEventGuard)
   @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   async cancelEvent(@Param('id') id: string) {
     return this.eventsService.cancelEvent(id);
@@ -246,8 +246,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Join event' })
   @ApiBearerAuth()
   @Post(':id/join')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)
+  @UseGuards(JwtAuthGuard)
   async joinEvent(
     @Param('id') id: string,
     @DecodeUser() user: UserWithoutPassword,
