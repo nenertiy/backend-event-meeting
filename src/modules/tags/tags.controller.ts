@@ -5,7 +5,7 @@ import {
   Post,
   Query,
   Body,
-  Put,
+  Patch,
   Delete,
   UseGuards,
 } from '@nestjs/common';
@@ -66,7 +66,7 @@ export class TagsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.ORGANIZER)
-  @Put(':id')
+  @Patch(':id')
   async update(@Param('id') id: string, @Body() data: { name: string }) {
     return this.tagsService.update(id, data);
   }
