@@ -6,8 +6,9 @@ import { PrismaService } from '../app/prisma.service';
 import { MediaModule } from '../media/media.module';
 import { UsersModule } from '../users/users.module';
 import { ParticipantsModule } from '../participants/participants.module';
+import { OrganizersModule } from '../organizers/organizers.module';
 @Module({
-  imports: [MediaModule, UsersModule, ParticipantsModule],
+  imports: [MediaModule, UsersModule, ParticipantsModule, OrganizersModule],
   controllers: [EventsController],
   providers: [EventsService, EventsRepository, PrismaService],
 })
