@@ -10,12 +10,14 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { MediaService } from '../media/media.service';
 import { ParticipantsService } from '../participants/participants.service';
 import { EventStatus } from '@prisma/client';
+import { OrganizersService } from '../organizers/organizers.service';
 @Injectable()
 export class EventsService {
   constructor(
     private readonly eventsRepository: EventsRepository,
     private readonly mediaService: MediaService,
     private readonly participantsService: ParticipantsService,
+    private readonly organizersService: OrganizersService,
   ) {}
 
   async create(
@@ -24,6 +26,11 @@ export class EventsService {
     coverImage: Express.Multer.File,
     eventImages: Express.Multer.File[],
   ) {
+    const organizer = await this.organizersService.findById(organizerId);
+    if (!organizer.isAccredited) {
+      throw new ForbiddenException('You are not allowed to create an event');
+    }
+
     const createdEvent = await this.eventsRepository.create(organizerId, data);
 
     if (coverImage) {
@@ -157,6 +164,10 @@ export class EventsService {
 
     if (!canRegister) {
       throw new ForbiddenException('Registration on the event is closed');
+    }
+
+    if (event.capacity && event.participantsCount >= event.capacity) {
+      throw new ForbiddenException('Event is full');
     }
 
     let participant = await this.participantsService.findByUserId(userId);
