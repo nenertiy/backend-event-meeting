@@ -33,21 +33,22 @@ enum UserRole {
 }
 
 model Event {
-  id                String      @id @default(uuid())
-  title             String
-  description       String
-  format            EventFormat
-  status            EventStatus @default(SCHEDULED)
-  startDate         DateTime
-  endDate           DateTime
-  duration          Int?
-  address           String
-  latitude          Float
-  longitude         Float
-  capacity          Int?
-  participantsCount Int         @default(0)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @default(now()) @updatedAt
+  id                   String      @id @default(uuid())
+  title                String
+  description          String
+  format               EventFormat
+  status               EventStatus @default(SCHEDULED)
+  registrationDeadline DateTime?
+  startDate            DateTime
+  endDate              DateTime
+  duration             Int?
+  address              String
+  latitude             Float
+  longitude            Float
+  capacity             Int?
+  participantsCount    Int         @default(0)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @default(now()) @updatedAt
 
   coverImageId     String?
   coverImage       Media?             @relation(fields: [coverImageId], references: [id], onDelete: Cascade)

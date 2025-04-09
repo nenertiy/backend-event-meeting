@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -149,6 +150,15 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
+    const now = new Date();
+    const canRegister =
+      (event.registrationDeadline && now <= event.registrationDeadline) ||
+      (!event.registrationDeadline && now <= event.endDate);
+
+    if (!canRegister) {
+      throw new ForbiddenException('Registration on the event is closed');
+    }
+
     let participant = await this.participantsService.findByUserId(userId);
     if (!participant) {
       participant = await this.participantsService.create(userId);
@@ -160,9 +170,7 @@ export class EventsService {
         participant.id,
       );
     if (eventParticipant) {
-      throw new ConflictException(
-        'You are already a participant of this event',
-      );
+      throw new ConflictException('You are already registered on this event');
     }
 
     await this.eventsRepository.joinEvent(eventId, participant.id);
@@ -171,9 +179,7 @@ export class EventsService {
       participantsCount: event.participantsCount + 1,
     });
 
-    return {
-      message: 'You have joined the event',
-    };
+    return { message: 'Successfully registered on the event' };
   }
 
   async leaveEvent(eventId: string, userId: string) {
