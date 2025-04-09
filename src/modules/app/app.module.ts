@@ -11,6 +11,7 @@ import { TokenModule } from '../token/token.module';
 import { TagsModule } from '../tags/tags.module';
 import { MediaModule } from '../media/media.module';
 import { EventsModule } from '../events/events.module';
+import { OrganizersModule } from '../organizers/organizers.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -51,6 +52,7 @@ import { EventsModule } from '../events/events.module';
     TagsModule,
     EventsModule,
     MediaModule,
+    OrganizersModule,
   ],
 })
 export class AppModule {}
