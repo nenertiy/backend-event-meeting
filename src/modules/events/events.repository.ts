@@ -3,7 +3,8 @@ import { PrismaService } from '../app/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { EVENT_SELECT } from 'src/common/types/include/event';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { EventStatus, ParticipationStatus } from '@prisma/client';
+import { EventStatus, ParticipationStatus, Prisma } from '@prisma/client';
+import { SearchEventDto } from './dto/search-event.dto';
 
 @Injectable()
 export class EventsRepository {
@@ -90,6 +91,13 @@ export class EventsRepository {
     });
   }
 
+  async search(dto: SearchEventDto) {
+    return this.prisma.event.findMany({
+      where: this.getWhere(dto),
+      select: EVENT_SELECT,
+    });
+  }
+
   async findById(id: string) {
     return this.prisma.event.findUnique({
       where: { id },
@@ -168,5 +176,49 @@ export class EventsRepository {
     if (now < startDate) return EventStatus.SCHEDULED;
     if (now >= startDate && now <= endDate) return EventStatus.ONGOING;
     return EventStatus.COMPLETED;
+  }
+
+  private getWhere(dto: SearchEventDto) {
+    const { filters } = dto;
+    const where: Prisma.EventWhereInput = {};
+
+    if (filters?.query) {
+      where.OR = [
+        { title: { contains: filters.query, mode: 'insensitive' } },
+        { description: { contains: filters.query, mode: 'insensitive' } },
+        { address: { contains: filters.query, mode: 'insensitive' } },
+        {
+          organizer: {
+            description: { contains: filters.query, mode: 'insensitive' },
+          },
+        },
+      ];
+    }
+
+    if (filters?.tagIds?.length === 1) {
+      where.eventTag = {
+        some: {
+          tag: {
+            id: {
+              in: filters.tagIds,
+            },
+          },
+        },
+      };
+    }
+
+    if (filters?.tagIds?.length > 1) {
+      where.AND = filters.tagIds.map((tagId) => ({
+        eventTag: {
+          some: {
+            tag: {
+              id: tagId,
+            },
+          },
+        },
+      }));
+    }
+
+    return where;
   }
 }

@@ -11,6 +11,7 @@ import { MediaService } from '../media/media.service';
 import { ParticipantsService } from '../participants/participants.service';
 import { EventStatus } from '@prisma/client';
 import { OrganizersService } from '../organizers/organizers.service';
+import { SearchEventDto } from './dto/search-event.dto';
 @Injectable()
 export class EventsService {
   constructor(
@@ -123,6 +124,15 @@ export class EventsService {
     }
 
     return event;
+  }
+
+  async search(dto: SearchEventDto) {
+    const events = await this.eventsRepository.search(dto);
+    if (events.length === 0) {
+      throw new NotFoundException('No events found');
+    }
+
+    return this.syncStatuses(events);
   }
 
   async findByOrganizerId(organizerId: string) {
