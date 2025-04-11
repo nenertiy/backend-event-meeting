@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../app/prisma.service';
+import {
+  ORGANIZER_SELECT,
+  ORGANIZER_WITH_EVENTS_SELECT,
+} from 'src/common/types/include/organizer';
 
 @Injectable()
 export class OrganizersRepository {
@@ -8,36 +12,13 @@ export class OrganizersRepository {
   async findById(id: string) {
     return this.prisma.organizer.findUnique({
       where: { id },
-      include: {
-        user: {
-          include: {
-            avatar: {
-              select: {
-                id: true,
-                url: true,
-              },
-            },
-          },
-        },
-        events: true,
-      },
+      select: ORGANIZER_WITH_EVENTS_SELECT,
     });
   }
 
   async findAll() {
     return this.prisma.organizer.findMany({
-      include: {
-        user: {
-          include: {
-            avatar: {
-              select: {
-                id: true,
-                url: true,
-              },
-            },
-          },
-        },
-      },
+      select: ORGANIZER_SELECT,
     });
   }
 
