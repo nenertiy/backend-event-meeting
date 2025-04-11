@@ -7,10 +7,6 @@ export const ORGANIZER_SELECT = {
   infoResource: true,
   isAccredited: true,
   phone: true,
-  email: true,
-  address: true,
-  latitude: true,
-  longitude: true,
   createdAt: true,
   updatedAt: true,
   user: {

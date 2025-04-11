@@ -18,7 +18,18 @@ export const USER_SELECT = {
   },
   favoriteOrganizer: {
     select: {
-      organizer: true,
+      organizer: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              avatar: { select: { id: true, url: true } },
+            },
+          },
+        },
+      },
     },
   },
   friendships: {

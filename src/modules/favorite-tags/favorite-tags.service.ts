@@ -2,13 +2,16 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import { FavoriteTagsRepository } from './favorite-tags.repository';
 import { TagsService } from '../tags/tags.service';
-
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 @Injectable()
 export class FavoriteTagsService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly favoriteTagsRepository: FavoriteTagsRepository,
     private readonly tagsService: TagsService,
   ) {}
@@ -27,6 +30,9 @@ export class FavoriteTagsService {
       userId,
       tagId,
     );
+
+    await this.cacheManager.del(`user_${userId}`);
+
     return {
       message: 'Tag added to favorites',
       favoriteTag,
@@ -47,6 +53,9 @@ export class FavoriteTagsService {
       userId,
       tagId,
     );
+
+    await this.cacheManager.del(`user_${userId}`);
+
     return {
       message: 'Tag removed from favorites',
       favoriteTag,
