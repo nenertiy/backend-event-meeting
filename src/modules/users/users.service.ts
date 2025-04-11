@@ -11,6 +11,7 @@ import { PasswordService } from '../password/password.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { UserRole } from '@prisma/client';
+import { User } from 'src/common/types/user';
 @Injectable()
 export class UsersService {
   constructor(
@@ -20,7 +21,7 @@ export class UsersService {
   ) {}
 
   async findById(id: string) {
-    const cachedUser = await this.cacheManager.get(`user_${id}`);
+    const cachedUser = await this.cacheManager.get<User>(`user_${id}`);
     if (cachedUser) {
       return cachedUser;
     }
@@ -30,7 +31,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    await this.cacheManager.set(`user_${id}`, user);
+    await this.cacheManager.set<User>(`user_${id}`, user);
 
     return user;
   }
@@ -44,7 +45,7 @@ export class UsersService {
   }
 
   async findByUsername(username: string) {
-    const cachedUser = await this.cacheManager.get(`user_${username}`);
+    const cachedUser = await this.cacheManager.get<User>(`user_${username}`);
     if (cachedUser) {
       return cachedUser;
     }
@@ -54,13 +55,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    await this.cacheManager.set(`user_${username}`, user);
+    await this.cacheManager.set<User>(`user_${username}`, user);
 
     return user;
   }
 
   async findAll(query?: string, take?: number, skip?: number) {
-    const cachedUsers = await this.cacheManager.get(
+    const cachedUsers = await this.cacheManager.get<User[]>(
       `users_${query}_${take}_${skip}`,
     );
     if (cachedUsers) {
@@ -69,7 +70,10 @@ export class UsersService {
 
     const users = await this.usersRepository.findAll(query, take, skip);
 
-    await this.cacheManager.set(`users_${query}_${take}_${skip}`, users);
+    await this.cacheManager.set<User[]>(
+      `users_${query}_${take}_${skip}`,
+      users,
+    );
 
     return users;
   }
@@ -87,14 +91,14 @@ export class UsersService {
         ...dto,
         password: hashedPassword,
       });
-      await this.cacheManager.set(`user_${organizer.id}`, organizer);
+      await this.cacheManager.set<User>(`user_${organizer.id}`, organizer);
       return organizer;
     } else {
       const user = await this.usersRepository.createUser({
         ...dto,
         password: hashedPassword,
       });
-      await this.cacheManager.set(`user_${user.id}`, user);
+      await this.cacheManager.set<User>(`user_${user.id}`, user);
       return user;
     }
   }
@@ -116,7 +120,7 @@ export class UsersService {
     }
 
     const user = await this.usersRepository.update(id, updateData);
-    await this.cacheManager.set(`user_${user.id}`, user);
+    await this.cacheManager.set<User>(`user_${user.id}`, user);
 
     return user;
   }
