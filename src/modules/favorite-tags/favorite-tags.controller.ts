@@ -6,6 +6,8 @@ import { ApiOperation, ApiTags, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Favorite Tags')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('favorite-tags')
 export class FavoriteTagsController {
   constructor(private readonly favoriteTagsService: FavoriteTagsService) {}
@@ -14,8 +16,6 @@ export class FavoriteTagsController {
   @ApiBody({
     schema: { type: 'object', properties: { tagId: { type: 'string' } } },
   })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post()
   async addFavoriteTag(
     @DecodeUser() user: UserWithoutPassword,
@@ -28,8 +28,6 @@ export class FavoriteTagsController {
   @ApiBody({
     schema: { type: 'object', properties: { tagId: { type: 'string' } } },
   })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Delete()
   async removeFavoriteTag(
     @DecodeUser() user: UserWithoutPassword,
@@ -39,8 +37,6 @@ export class FavoriteTagsController {
   }
 
   @ApiOperation({ summary: 'Get all favorite tags' })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get()
   async getFavoriteTags(@DecodeUser() user: UserWithoutPassword) {
     return this.favoriteTagsService.getFavoriteTags(user.id);
