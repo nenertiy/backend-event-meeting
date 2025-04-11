@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: backend-event-app
+    container_name: backend-event-meeting-app
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/event
       ACCESS_TOKEN: ACCESS_TOKEN
@@ -26,7 +26,7 @@ services:
       sh -c "npx prisma db push --accept-data-loss && npm run start"
 
   postgres:
-    container_name: postgres-event-app
+    container_name: postgres-event-meeting-app
     image: postgres:17-alpine3.21
     restart: always
     environment:
@@ -46,7 +46,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis-event-app
+    container_name: redis-event-meeting-app
     restart: always
     ports:
       - '6379:6379'
