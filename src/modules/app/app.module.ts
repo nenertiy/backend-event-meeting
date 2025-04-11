@@ -12,6 +12,8 @@ import { TagsModule } from '../tags/tags.module';
 import { MediaModule } from '../media/media.module';
 import { EventsModule } from '../events/events.module';
 import { OrganizersModule } from '../organizers/organizers.module';
+import { FavoriteTagsModule } from '../favorite-tags/favorite-tags.module';
+import { FavoriteOrganizersModule } from '../favorite-organizers/favorite-organizers.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -53,6 +55,8 @@ import { OrganizersModule } from '../organizers/organizers.module';
     EventsModule,
     MediaModule,
     OrganizersModule,
+    FavoriteTagsModule,
+    FavoriteOrganizersModule,
   ],
 })
 export class AppModule {}

@@ -7,5 +7,6 @@ import { PrismaService } from '../app/prisma.service';
 @Module({
   controllers: [TagsController],
   providers: [TagsService, TagsRepository, PrismaService],
+  exports: [TagsService],
 })
 export class TagsModule {}
