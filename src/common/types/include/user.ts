@@ -11,6 +11,26 @@ export const USER_SELECT = {
       events: true,
     },
   },
+  participant: {
+    select: {
+      id: true,
+      visibility: true,
+      eventParticipant: {
+        select: {
+          id: true,
+          status: true,
+          event: {
+            select: {
+              id: true,
+              title: true,
+              startDate: true,
+              endDate: true,
+            },
+          },
+        },
+      },
+    },
+  },
   favoriteTags: {
     select: {
       tag: { select: { id: true, name: true } },
@@ -50,6 +70,17 @@ export const USER_SELECT = {
       },
     },
   },
+  createdAt: true,
+  updatedAt: true,
+} as Prisma.UserSelect;
+
+export const USERS_SELECT = {
+  id: true,
+  username: true,
+  email: true,
+  role: true,
+  avatar: { select: { id: true, url: true } },
+  organizer: true,
   createdAt: true,
   updatedAt: true,
 } as Prisma.UserSelect;

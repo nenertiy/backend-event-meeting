@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../app/prisma.service';
-import { USER_SELECT } from 'src/common/types/include/user';
+import { USER_SELECT, USERS_SELECT } from 'src/common/types/include/user';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from '@prisma/client';
@@ -32,7 +32,7 @@ export class UsersRepository {
       take,
       skip,
       where: { username: { contains: query, mode: 'insensitive' } },
-      select: USER_SELECT,
+      select: USERS_SELECT,
     });
   }
 

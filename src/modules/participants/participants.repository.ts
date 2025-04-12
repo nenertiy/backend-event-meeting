@@ -9,6 +9,13 @@ export class ParticipantsRepository {
   async create(userId: string) {
     return this.prisma.participant.create({
       data: { userId, visibility: Visibility.PUBLIC },
+      include: {
+        eventParticipant: {
+          include: {
+            event: true,
+          },
+        },
+      },
     });
   }
 
@@ -18,9 +25,23 @@ export class ParticipantsRepository {
     });
   }
 
+  async changeVisibility(id: string, visibility: Visibility) {
+    return this.prisma.participant.update({
+      where: { id },
+      data: { visibility },
+    });
+  }
+
   async findByUserId(userId: string) {
     return this.prisma.participant.findUnique({
       where: { userId },
+      include: {
+        eventParticipant: {
+          include: {
+            event: true,
+          },
+        },
+      },
     });
   }
 

@@ -110,9 +110,9 @@ model Participant {
   id         String     @id @default(uuid())
   visibility Visibility
 
-  userId String             @unique()
-  user   User               @relation(fields: [userId], references: [id])
-  events EventParticipant[]
+  userId           String             @unique()
+  user             User               @relation(fields: [userId], references: [id])
+  eventParticipant EventParticipant[]
 }
 
 enum Visibility {

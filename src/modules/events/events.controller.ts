@@ -50,6 +50,10 @@ export class EventsController {
           type: 'string',
           format: 'date',
         },
+        registrationDeadline: {
+          type: 'string',
+          format: 'date',
+        },
         duration: {
           type: 'number',
         },
@@ -72,10 +76,6 @@ export class EventsController {
           type: 'string',
           enum: Object.values(EventFormat),
         },
-        status: {
-          type: 'string',
-          enum: Object.values(EventStatus),
-        },
         coverImage: {
           type: 'string',
           format: 'binary',
@@ -97,7 +97,7 @@ export class EventsController {
   @ApiBearerAuth()
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ORGANIZER)
+  @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
   @UseInterceptors(AnyFilesInterceptor())
   async create(
     @DecodeUser() user: UserWithoutPassword,
