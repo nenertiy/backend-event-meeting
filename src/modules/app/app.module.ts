@@ -15,6 +15,7 @@ import { OrganizersModule } from '../organizers/organizers.module';
 import { FavoriteTagsModule } from '../favorite-tags/favorite-tags.module';
 import { FavoriteOrganizersModule } from '../favorite-organizers/favorite-organizers.module';
 import { FriendsModule } from '../friends/friends.module';
+import { ParticipantsModule } from '../participants/participants.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -59,6 +60,7 @@ import { FriendsModule } from '../friends/friends.module';
     FavoriteTagsModule,
     FavoriteOrganizersModule,
     FriendsModule,
+    ParticipantsModule,
   ],
 })
 export class AppModule {}

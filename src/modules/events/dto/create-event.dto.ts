@@ -48,6 +48,16 @@ export class CreateEventDto {
   })
   endDate: Date;
 
+  @ApiProperty({ type: Date })
+  @IsDateString()
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined) return undefined;
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date.toISOString();
+  })
+  registrationDeadline: Date;
+
   @ApiProperty({ description: 'Event duration' })
   @IsNumber()
   @IsOptional()

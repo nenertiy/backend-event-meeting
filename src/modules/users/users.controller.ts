@@ -44,7 +44,7 @@ export class UsersController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getMe(@DecodeUser() user: UserWithoutPassword) {
-    return this.usersService.findById(user.id);
+    return this.usersService.findById(user.id, user.id);
   }
 
   @ApiOperation({ summary: 'Update user' })
@@ -132,8 +132,11 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Get user by id' })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findById(id);
+  async findOne(
+    @Param('id') id: string,
+    @DecodeUser() user?: UserWithoutPassword,
+  ) {
+    return this.usersService.findById(id, user?.id);
   }
 
   @ApiOperation({ summary: 'Update user by id (Admin only)' })
