@@ -69,10 +69,37 @@ export class UsersRepository {
     });
   }
 
-  async update(id: string, data: UpdateUserDto) {
+  async updateUser(id: string, data: UpdateUserDto) {
     return this.prisma.user.update({
       where: { id },
-      data,
+      data: {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      },
+      select: USER_SELECT,
+    });
+  }
+
+  async updateOrganizer(id: string, data: UpdateUserDto) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        role: UserRole.ORGANIZER,
+        organizer: {
+          create: {
+            description: data.description,
+            sphereOfActivity: data.sphereOfActivity,
+            phone: data.phone,
+            isAccredited: false,
+            infoResource: data.infoResource,
+          },
+        },
+      },
       select: USER_SELECT,
     });
   }

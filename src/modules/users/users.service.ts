@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   Inject,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,7 +12,7 @@ import { PasswordService } from '../password/password.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { UserRole, Visibility } from '@prisma/client';
-import { User } from 'src/common/types/user';
+import { User, UserWithoutPassword } from 'src/common/types/user';
 @Injectable()
 export class UsersService {
   constructor(
@@ -150,10 +151,23 @@ export class UsersService {
     }
   }
 
-  async update(id: string, dto: UpdateUserDto) {
+  async update(
+    id: string,
+    dto: UpdateUserDto,
+    currentUser: UserWithoutPassword,
+  ) {
     await this.checkUserExistsById(id);
-    await this.checkUserExistsByEmail(dto.email);
-    await this.checkUserExistsByUsername(dto.username);
+
+    if (dto.email) {
+      await this.checkUserExistsByEmail(dto.email);
+    }
+    if (dto.username) {
+      await this.checkUserExistsByUsername(dto.username);
+    }
+
+    if (currentUser.role !== UserRole.ADMIN && currentUser.id !== id) {
+      throw new ForbiddenException('You can only update your own profile');
+    }
 
     await this.cacheManager.del('users');
     await this.cacheManager.del(`user_${id}`);
@@ -166,14 +180,25 @@ export class UsersService {
       );
     }
 
-    const user = await this.usersRepository.update(id, updateData);
+    let user;
+
+    if (dto.role === UserRole.ORGANIZER) {
+      user = await this.usersRepository.updateOrganizer(id, updateData);
+    } else {
+      user = await this.usersRepository.updateUser(id, updateData);
+    }
+
     await this.cacheManager.set<User>(`user_${user.id}`, user);
 
     return user;
   }
 
-  async delete(id: string) {
+  async delete(id: string, currentUser: UserWithoutPassword) {
     await this.checkUserExistsById(id);
+
+    if (currentUser.role !== UserRole.ADMIN && currentUser.id !== id) {
+      throw new ForbiddenException('You can only delete your own profile');
+    }
 
     await this.cacheManager.del('users');
     await this.cacheManager.del(`user_${id}`);
