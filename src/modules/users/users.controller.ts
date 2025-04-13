@@ -12,6 +12,7 @@ import {
   FileTypeValidator,
   ParseFilePipe,
   Delete,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -45,25 +46,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getMe(@DecodeUser() user: UserWithoutPassword) {
     return this.usersService.findById(user.id, user.id);
-  }
-
-  @ApiOperation({ summary: 'Update user' })
-  @ApiBearerAuth()
-  @Patch('profile')
-  @UseGuards(JwtAuthGuard)
-  async updateUser(
-    @DecodeUser() user: UserWithoutPassword,
-    @Body() dto: UpdateUserDto,
-  ) {
-    return this.usersService.update(user.id, dto);
-  }
-
-  @ApiOperation({ summary: 'Delete user' })
-  @ApiBearerAuth()
-  @Delete('profile')
-  @UseGuards(JwtAuthGuard)
-  async deleteUser(@DecodeUser() user: UserWithoutPassword) {
-    return this.usersService.delete(user.id);
   }
 
   @ApiOperation({ summary: 'Upload avatar' })
@@ -139,21 +121,62 @@ export class UsersController {
     return this.usersService.findById(id, user?.id);
   }
 
-  @ApiOperation({ summary: 'Update user by id (Admin only)' })
+  @ApiOperation({ summary: 'Update user by id' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+        },
+        email: {
+          type: 'string',
+        },
+        password: {
+          type: 'string',
+        },
+        role: {
+          type: 'string',
+          enum: Object.values(UserRole).filter(
+            (role) => role !== UserRole.ADMIN,
+          ),
+        },
+        sphereOfActivity: {
+          type: 'string',
+        },
+        description: {
+          type: 'string',
+        },
+        phone: {
+          type: 'string',
+        },
+        infoResource: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
   @Patch(':id')
-  async updateUserById(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  async updateUserById(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @DecodeUser() user: UserWithoutPassword,
+  ) {
+    return this.usersService.update(id, dto, user);
   }
 
-  @ApiOperation({ summary: 'Delete user by id (Admin only)' })
+  @ApiOperation({ summary: 'Delete user by id' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteUserById(@Param('id') id: string) {
-    return this.usersService.delete(id);
+  async deleteUserById(
+    @Param('id') id: string,
+    @DecodeUser() user: UserWithoutPassword,
+  ) {
+    return this.usersService.delete(id, user);
   }
 }
