@@ -34,7 +34,9 @@ export class EventsService {
   ) {
     const organizer = await this.organizersService.findById(organizerId);
     if (!organizer.isAccredited) {
-      throw new ForbiddenException('You are not allowed to create an event');
+      throw new ForbiddenException(
+        'You are not allowed to create an event, you need to be accredited',
+      );
     }
 
     const createdEvent = await this.eventsRepository.create(organizerId, data);
