@@ -72,4 +72,36 @@ export class MediaRepository {
       include: { image: true },
     });
   }
+
+  async findUsersWithAvatar(mediaId: string) {
+    return this.prisma.user.findMany({
+      where: { avatarId: mediaId },
+    });
+  }
+
+  async removeAvatarFromUsers(mediaId: string) {
+    return this.prisma.user.updateMany({
+      where: { avatarId: mediaId },
+      data: { avatarId: null },
+    });
+  }
+
+  async findEventsWithCoverImage(mediaId: string) {
+    return this.prisma.event.findMany({
+      where: { coverImageId: mediaId },
+    });
+  }
+
+  async removeCoverImageFromEvents(mediaId: string) {
+    return this.prisma.event.updateMany({
+      where: { coverImageId: mediaId },
+      data: { coverImageId: null },
+    });
+  }
+
+  async removeEventImages(mediaId: string) {
+    return this.prisma.eventImage.deleteMany({
+      where: { imageId: mediaId },
+    });
+  }
 }

@@ -73,7 +73,31 @@ export class MediaService implements OnModuleInit {
     if (!media) {
       throw new NotFoundException('Media not found');
     }
+
+    // Перед удалением, проверим и удалим связи с пользователями
+    const usersWithAvatar = await this.mediaRepository.findUsersWithAvatar(id);
+
+    // Обновим пользователей, убрав ссылку на аватар
+    if (usersWithAvatar.length > 0) {
+      await this.mediaRepository.removeAvatarFromUsers(id);
+    }
+
+    // Проверим и удалим связи с событиями (coverImage)
+    const eventsWithCover =
+      await this.mediaRepository.findEventsWithCoverImage(id);
+
+    if (eventsWithCover.length > 0) {
+      await this.mediaRepository.removeCoverImageFromEvents(id);
+    }
+
+    // Проверим и удалим связи в EventImage
+    await this.mediaRepository.removeEventImages(id);
+
+    // Теперь удаляем само медиа
     await this.mediaRepository.delete(id);
+
+    // Также удаляем файл из S3
+    await this.deleteObject(media.url);
   }
 
   async findOneById(id: string) {
@@ -86,12 +110,22 @@ export class MediaService implements OnModuleInit {
 
   async uploadAvatar(userId: string, file: Express.Multer.File) {
     const user = await this.mediaRepository.findUserAvatar(userId);
-    if (user.avatar) {
-      await this.delete(user.avatarId);
-      await this.deleteObject(user.avatar.url);
-    }
+
     const upload = await this.uploadFile(file, MediaType.AVATAR);
+
     await this.mediaRepository.uploadUserAvatar(userId, upload.id);
+
+    if (user.avatarId) {
+      try {
+        await this.mediaRepository.delete(user.avatarId);
+        if (user.avatar?.url) {
+          await this.deleteObject(user.avatar?.url);
+        }
+      } catch (error) {
+        console.error('Failed to delete old avatar:', error);
+      }
+    }
+
     return upload;
   }
 
