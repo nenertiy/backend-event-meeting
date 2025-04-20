@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CanEventGuard } from '../auth/guards/event.guard';
 import { SearchEventDto } from './dto/search-event.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -276,5 +277,10 @@ export class EventsController {
   @Get(':id/participants')
   async getParticipants(@Param('id') id: string) {
     return this.eventsService.getParticipants(id);
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async updateEventsStatuses() {
+    return this.eventsService.updateEventsStatuses();
   }
 }
