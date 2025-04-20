@@ -43,6 +43,9 @@ export class EventsController {
         description: {
           type: 'string',
         },
+        infoResource: {
+          type: 'string',
+        },
         startDate: {
           type: 'string',
           format: 'date',
@@ -148,6 +151,9 @@ export class EventsController {
           type: 'string',
         },
         description: {
+          type: 'string',
+        },
+        infoResource: {
           type: 'string',
         },
         startDate: {

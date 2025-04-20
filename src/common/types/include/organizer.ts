@@ -4,7 +4,6 @@ export const ORGANIZER_SELECT = {
   id: true,
   description: true,
   sphereOfActivity: true,
-  infoResource: true,
   isAccredited: true,
   phone: true,
   createdAt: true,
