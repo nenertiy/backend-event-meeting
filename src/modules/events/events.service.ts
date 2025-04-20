@@ -10,12 +10,12 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { MediaService } from '../media/media.service';
 import { ParticipantsService } from '../participants/participants.service';
-import { EventStatus } from '@prisma/client';
 import { OrganizersService } from '../organizers/organizers.service';
 import { SearchEventDto } from './dto/search-event.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Event } from 'src/common/types/event';
+import { Logger } from '@nestjs/common';
 @Injectable()
 export class EventsService {
   constructor(
@@ -25,6 +25,8 @@ export class EventsService {
     private readonly participantsService: ParticipantsService,
     private readonly organizersService: OrganizersService,
   ) {}
+
+  private readonly logger = new Logger(EventsService.name);
 
   async create(
     organizerId: string,
@@ -53,7 +55,7 @@ export class EventsService {
     }
 
     const event = await this.eventsRepository.findById(createdEvent.id);
-
+    this.logger.log(`Event ${event.id} created`);
     return event;
   }
 
@@ -78,7 +80,7 @@ export class EventsService {
     }
 
     await this.eventsRepository.update(id, data);
-
+    this.logger.log(`Event ${id} updated`);
     return this.eventsRepository.findById(id);
   }
 
@@ -95,6 +97,7 @@ export class EventsService {
     }
 
     await this.eventsRepository.delete(id);
+    this.logger.log(`Event ${id} deleted`);
     return {
       message: 'Event deleted successfully',
     };
@@ -111,14 +114,13 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    const syncedEvents = await this.syncStatuses(events);
 
     await this.cacheManager.set<Event[]>(
       `events_${query}_${take}_${skip}`,
-      syncedEvents,
+      events,
     );
 
-    return syncedEvents;
+    return events;
   }
 
   async findById(id: string) {
@@ -129,21 +131,6 @@ export class EventsService {
     const event = await this.eventsRepository.findById(id);
     if (!event) {
       throw new NotFoundException('Event not found');
-    }
-
-    const actualStatus = await this.eventsRepository.determineEventStatus(
-      event.startDate,
-      event.endDate,
-    );
-
-    if (
-      event.status !== EventStatus.CANCELLED &&
-      event.status !== actualStatus
-    ) {
-      await this.eventsRepository.update(id, {
-        status: actualStatus,
-      });
-      event.status = actualStatus;
     }
 
     await this.cacheManager.set<Event>(`event_${id}`, event);
@@ -163,14 +150,12 @@ export class EventsService {
       throw new NotFoundException('No events found');
     }
 
-    const syncedEvents = await this.syncStatuses(events);
-
     await this.cacheManager.set<Event[]>(
       `events_search_${JSON.stringify(dto)}`,
-      syncedEvents,
+      events,
     );
 
-    return syncedEvents;
+    return events;
   }
 
   async findByOrganizerId(organizerId: string) {
@@ -184,14 +169,13 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    const syncedEvents = await this.syncStatuses(events);
 
     await this.cacheManager.set<Event[]>(
       `events_organizer_${organizerId}`,
-      syncedEvents,
+      events,
     );
 
-    return syncedEvents;
+    return events;
   }
 
   async findByTagId(tagId: string) {
@@ -205,11 +189,10 @@ export class EventsService {
     if (events.length === 0) {
       throw new NotFoundException('No events found');
     }
-    const syncedEvents = await this.syncStatuses(events);
 
-    await this.cacheManager.set<Event[]>(`events_tag_${tagId}`, syncedEvents);
+    await this.cacheManager.set<Event[]>(`events_tag_${tagId}`, events);
 
-    return syncedEvents;
+    return events;
   }
 
   async cancelEvent(id: string) {
@@ -221,7 +204,7 @@ export class EventsService {
     await this.cacheManager.del(`events`);
     await this.cacheManager.del(`event_${id}`);
     await this.cacheManager.del(`events_${event.organizerId}`);
-
+    this.logger.log(`Event ${id} cancelled`);
     return this.eventsRepository.cancelEvent(id);
   }
 
@@ -259,7 +242,6 @@ export class EventsService {
     }
 
     await this.eventsRepository.joinEvent(eventId, participant.id);
-
     await this.eventsRepository.update(eventId, {
       participantsCount: event.participantsCount + 1,
     });
@@ -314,7 +296,16 @@ export class EventsService {
     return participants;
   }
 
-  private async syncStatuses(events: any[]): Promise<any[]> {
+  async updateEventsStatuses() {
+    const events = await this.eventsRepository.findAll();
+    await this.syncStatuses(events);
+    await this.cacheManager.del(`events`);
+    await this.cacheManager.del(`events_*`);
+    await this.cacheManager.del(`event_*`);
+    this.logger.log('Events statuses updated');
+  }
+
+  private async syncStatuses(events: Event[]): Promise<Event[]> {
     for (const event of events) {
       const actualStatus = await this.eventsRepository.determineEventStatus(
         event.startDate,

@@ -7,8 +7,15 @@ import { MediaModule } from '../media/media.module';
 import { UsersModule } from '../users/users.module';
 import { ParticipantsModule } from '../participants/participants.module';
 import { OrganizersModule } from '../organizers/organizers.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
-  imports: [MediaModule, UsersModule, ParticipantsModule, OrganizersModule],
+  imports: [
+    MediaModule,
+    UsersModule,
+    ParticipantsModule,
+    OrganizersModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [EventsController],
   providers: [EventsService, EventsRepository, PrismaService],
 })
