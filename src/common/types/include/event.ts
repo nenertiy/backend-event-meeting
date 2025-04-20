@@ -4,6 +4,7 @@ export const EVENT_SELECT = {
   id: true,
   title: true,
   description: true,
+  infoResource: true,
   format: true,
   status: true,
   startDate: true,
@@ -39,7 +40,6 @@ export const EVENT_SELECT = {
       id: true,
       description: true,
       sphereOfActivity: true,
-      infoResource: true,
       isAccredited: true,
       phone: true,
       user: {

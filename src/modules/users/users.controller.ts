@@ -153,9 +153,6 @@ export class UsersController {
         phone: {
           type: 'string',
         },
-        infoResource: {
-          type: 'string',
-        },
       },
     },
   })

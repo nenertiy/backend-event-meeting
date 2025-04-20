@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsOptional,
-  IsPhoneNumber,
   IsString,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
