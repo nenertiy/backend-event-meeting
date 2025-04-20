@@ -43,9 +43,4 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   phone?: string;
-
-  @ApiProperty({ required: false, default: 'https://example.com' })
-  @IsString()
-  @IsOptional()
-  infoResource?: string;
 }
