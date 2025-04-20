@@ -27,6 +27,7 @@ export class EventsRepository {
     return this.prisma.event.create({
       data: {
         ...eventData,
+        infoResource: eventData.infoResource || '',
         status,
         eventTag: tagIds?.length
           ? { create: validTagIds.map((tagId) => ({ tagId })) }

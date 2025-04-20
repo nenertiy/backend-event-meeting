@@ -23,6 +23,11 @@ export class CreateEventDto {
   @IsNotEmpty()
   description: string;
 
+  @ApiProperty({ default: 'https://example.com' })
+  @IsString()
+  @IsOptional()
+  infoResource?: string;
+
   @ApiProperty({ description: 'Event format' })
   @IsEnum(EventFormat)
   @IsNotEmpty()

@@ -21,6 +21,11 @@ export class UpdateEventDto extends PartialType(CreateEventDto) {
   @IsOptional()
   description?: string;
 
+  @ApiProperty({ required: false, default: 'https://example.com' })
+  @IsString()
+  @IsOptional()
+  infoResource?: string;
+
   @ApiProperty({ description: 'Event format', required: false })
   @IsEnum(EventFormat)
   @IsOptional()

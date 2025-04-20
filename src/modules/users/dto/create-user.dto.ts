@@ -46,9 +46,4 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   phone?: string;
-
-  @ApiProperty({ default: 'https://example.com' })
-  @IsString()
-  @IsOptional()
-  infoResource?: string;
 }

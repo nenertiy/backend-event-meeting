@@ -36,6 +36,7 @@ model Event {
   id                   String      @id @default(uuid())
   title                String
   description          String
+  infoResource         String
   format               EventFormat
   status               EventStatus @default(SCHEDULED)
   registrationDeadline DateTime?
@@ -85,7 +86,6 @@ model Organizer {
   sphereOfActivity String?
   description      String?
   phone            String?
-  infoResource     String?
   isAccredited     Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
