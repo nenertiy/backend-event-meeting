@@ -23,7 +23,7 @@ services:
       minio:
         condition: service_healthy
     command: >
-      sh -c "npx prisma db push --force-reset && npm run start:prod"
+      sh -c "npm run start:prod"
 
   postgres:
     container_name: postgres-event-meeting-app
